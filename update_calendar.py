@@ -280,7 +280,7 @@ def parse_times(raw: str) -> Optional[Tuple[str, str]]:
     s = raw.replace("\n", " ")
     # najčešći oblici 18-19, 18.00-19.00, 18:00 – 19:00
     m = re.search(
-        r"\b(\d{1,2})(?:[:.](\d{2}))?\s*[-–—]\s*"
+        r"\b(\d{1,2})(?:[:.](\d{2}))?\s*h?\s*[-–—~]+\s*"
         r"(\d{1,2})(?:[:.](\d{2}))?\b",
         s,
     )
@@ -294,29 +294,95 @@ def parse_times(raw: str) -> Optional[Tuple[str, str]]:
     return f"{h1:02d}:{m1:02d}", f"{h2:02d}:{m2:02d}"
 
 
-def extract_sessions(img: Image.Image) -> List[Session]:
-    work = prep(img)
-    data = tsv(work)
-    centers = find_day_centers(data)
-    ry = find_school_row_y(data)
-    y1, y2 = row_bounds(work, ry)
-    bounds = day_bounds(centers, work.width)
+def _line_positions(dark: np.ndarray, axis: str, thr: float = 0.5) -> List[int]:
+    """
+    Pozicije linija tablice iz projekcijskog profila: linija je red (axis='h')
+    ili stupac (axis='v') piksela u kojem je bar `thr` udjela piksela tamno.
+    Otpornije od morfologije na JPEG artefakte i svijetlo-sive linije.
+    """
+    frac = dark.mean(axis=1) if axis == "h" else dark.mean(axis=0)
+    idx = np.where(frac > thr)[0]
+    groups: List[List[int]] = []
+    for v in idx:
+        if not groups or v - groups[-1][-1] > 12:
+            groups.append([int(v)])
+        else:
+            groups[-1].append(int(v))
+    return [int(np.mean(g)) for g in groups]
 
+
+def ocr_cell(img: Image.Image, box: Tuple[int, int, int, int]) -> str:
+    x1, y1, x2, y2 = box
+    mx = max(3, int((x2 - x1) * 0.03))
+    my = max(3, int((y2 - y1) * 0.06))
+    cell = img.crop((x1 + mx, y1 + my, x2 - mx, y2 - my))
+    # bijela podloga + dodatno povećanje = pouzdaniji OCR malih ćelija
+    cell = cell.resize((cell.width * 2, cell.height * 2))
+    return pytesseract.image_to_string(cell, lang="hrv+eng", config="--psm 6").strip()
+
+
+def extract_sessions(img: Image.Image) -> List[Session]:
+    """
+    Robusno čitanje: mreža tablice (linije) određuje ćelije, OCR se radi po ćeliji.
+    Zaglavlja dana (PON..NED) su na slici velika i Tesseract ih često preskoči,
+    pa se redoslijed stupaca uzima iz strukture tablice (prvi stupac = selekcija,
+    zatim PON..NED), a ne iz OCR-a zaglavlja.
+    """
+    work = prep(img)
+    arr = np.array(work)
+    dark = arr < 120
+    xs = _line_positions(dark, "v")
+    ys = _line_positions(dark, "h")
+
+    if len(xs) < 9:
+        raise RuntimeError(f"Nije prepoznata mreža tablice (okomite linije: {len(xs)}).")
+    if len(ys) < 3:
+        raise RuntimeError(f"Nije prepoznata mreža tablice (vodoravne linije: {len(ys)}).")
+
+    # Tablica ima 8 stupaca: SELEKCIJA + 7 dana. Ako je linija više (npr. rub slike),
+    # uzmi 9 najgušće raspoređenih linija koje čine najširi blok.
+    if len(xs) > 9:
+        best = None
+        for i in range(0, len(xs) - 8):
+            seg = xs[i:i + 9]
+            widths = np.diff(seg)
+            spread = widths.max() / max(1, widths.min())
+            score = (spread, -(seg[-1] - seg[0]))
+            if best is None or score < best[0]:
+                best = (score, seg)
+        xs = best[1]
+
+    cols = [(xs[i], xs[i + 1]) for i in range(8)]
+    rows = [(ys[i], ys[i + 1]) for i in range(len(ys) - 1) if ys[i + 1] - ys[i] >= 30]
+
+    # red škole: OCR prvog stupca svakog reda
+    school_row = None
+    first_data_row = None
+    for r in rows:
+        txt = ascii_norm(ocr_cell(work, (cols[0][0], r[0], cols[0][1], r[1])))
+        if "SELEKCIJA" in txt and first_data_row is None:
+            first_data_row = "next"
+            continue
+        if first_data_row == "next":
+            first_data_row = r
+        if "SKOLA" in txt or "PLIVAN" in txt or "VATERPOL" in txt:
+            school_row = r
+            break
+    if school_row is None:
+        if first_data_row is not None and first_data_row != "next":
+            school_row = first_data_row
+        else:
+            raise RuntimeError("Red škole plivanja i vaterpola nije prepoznat.")
+
+    y1, y2 = school_row
     sessions: List[Session] = []
     for offset, day in enumerate(DAYS):
-        if day not in bounds:
-            continue
-        x1, x2 = bounds[day]
-        # mala margina da se ne pokupi tekst susjedne ćelije
-        margin = max(3, int((x2 - x1) * 0.03))
-        cell = work.crop((x1 + margin, y1, x2 - margin, y2))
-        raw = pytesseract.image_to_string(cell, lang="hrv+eng", config="--psm 6").strip()
+        x1, x2 = cols[offset + 1]
+        raw = ocr_cell(work, (x1, y1, x2, y2))
         n = ascii_norm(raw)
-
         # korisnik želi samo Svetice; Šalata se namjerno ignorira
         if "SVET" not in n:
             continue
-
         times = parse_times(raw)
         if not times:
             raise RuntimeError(f"Svetice su prepoznate za {day}, ali satnica nije: {raw!r}")
