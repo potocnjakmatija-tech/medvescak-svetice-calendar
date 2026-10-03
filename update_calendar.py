@@ -92,26 +92,37 @@ def parse_week_start_and_image(html: str) -> Tuple[datetime, str]:
     d1, mo1, d2, mo2, year = map(int, m.groups())
     week_start = datetime(year, mo1, d1)
 
+    # 1) Najpouzdanije: slika koja se nalazi u istom bloku kao tekst "Datum: ..."
+    #    (na naslovnici postoji i stalni banner raspored-1.jpg, koji NIJE raspored)
+    datum_node = soup.find(string=re.compile(r"Datum:\s*\d", re.I))
+    if datum_node is not None:
+        node = datum_node.parent
+        for _ in range(8):
+            if node is None:
+                break
+            img = node.find("img")
+            if img is not None:
+                src = img.get("data-src") or img.get("data-lazy-src") or img.get("src")
+                if src:
+                    return week_start, urljoin(HOME_URL, src)
+            node = node.parent
+
+    # 2) Rezerva: bodovanje po nazivu, uz prednost novijem /uploads/GGGG/MM/
     candidates = []
     for img in soup.find_all("img"):
         src = img.get("data-src") or img.get("data-lazy-src") or img.get("src")
         if not src:
             continue
-        blob = " ".join([
-            img.get("alt") or "",
-            img.get("title") or "",
-            src,
-        ])
-        n = ascii_norm(blob)
-        score = 0
-        if "RASPORED" in n:
-            score += 10
+        n = ascii_norm(" ".join([img.get("alt") or "", img.get("title") or "", src]))
+        if "RASPORED" not in n:
+            continue
+        score = 10
         if "PAGE0001" in n:
             score += 3
-        if "UPLOADS" in n:
-            score += 1
-        if score:
-            candidates.append((score, urljoin(HOME_URL, src)))
+        mm = re.search(r"/UPLOADS/(\d{4})/(\d{2})/", n)
+        if mm:
+            score += (int(mm.group(1)) * 12 + int(mm.group(2))) / 100000.0
+        candidates.append((score, urljoin(HOME_URL, src)))
 
     if not candidates:
         raise RuntimeError("Nije pronađena slika rasporeda.")
