@@ -1,0 +1,43 @@
+name: Osvježi kalendar Svetice
+
+on:
+  schedule:
+    - cron: "0 4 * * *"   # svaki dan u 04:00 UTC (06:00 Zagreb ljeti / 05:00 zimi)
+  workflow_dispatch:       # ručno pokretanje gumbom "Run workflow"
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instaliraj Tesseract (hrv + eng)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-hrv tesseract-ocr-eng
+          tesseract --version | head -1
+
+      - name: Instaliraj Python pakete
+        run: pip install -r requirements.txt
+
+      - name: Pokreni skriptu (OCR rasporeda)
+        run: python update_calendar.py
+
+      - name: Spremi novi kalendar u repozitorij
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add medvescak-svetice.ics
+          if git diff --cached --quiet; then
+            echo "Nema promjena u kalendaru."
+          else
+            git commit -m "Automatsko osvježavanje rasporeda Svetice"
+            git push
+          fi
