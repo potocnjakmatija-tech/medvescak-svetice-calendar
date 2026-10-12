@@ -8,12 +8,12 @@ X-WR-TIMEZONE:Europe/Zagreb
 REFRESH-INTERVAL;VALUE=DURATION:PT6H
 X-PUBLISHED-TTL:PT6H
 BEGIN:VEVENT
-UID:vk-medvescak-svetice-20261002@calendar.local
-DTSTAMP:20261005T041626Z
-DTSTART;TZID=Europe/Zagreb:20261002T180000
-DTEND;TZID=Europe/Zagreb:20261002T190000
+UID:vk-medvescak-svetice-20261012@calendar.local
+DTSTAMP:20261012T111910Z
+DTSTART;TZID=Europe/Zagreb:20261012T180000
+DTEND;TZID=Europe/Zagreb:20261012T190000
 SUMMARY:VK Medveščak – Svetice (škola)
-LOCATION:Bazeni Svetice, Zagreb
+LOCATION:Bazeni Svetice\, Zagreb
 DESCRIPTION:Automatski preuzeto sa službenog rasporeda VK Medveščak. Izvo
  r: https://www.vk-medvescak.hr/
 URL:https://www.vk-medvescak.hr/
@@ -21,12 +21,38 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:vk-medvescak-svetice-20261003@calendar.local
-DTSTAMP:20261005T041626Z
-DTSTART;TZID=Europe/Zagreb:20261003T100000
-DTEND;TZID=Europe/Zagreb:20261003T110000
+UID:vk-medvescak-svetice-20261014@calendar.local
+DTSTAMP:20261012T111910Z
+DTSTART;TZID=Europe/Zagreb:20261014T180000
+DTEND;TZID=Europe/Zagreb:20261014T190000
 SUMMARY:VK Medveščak – Svetice (škola)
-LOCATION:Bazeni Svetice, Zagreb
+LOCATION:Bazeni Svetice\, Zagreb
+DESCRIPTION:Automatski preuzeto sa službenog rasporeda VK Medveščak. Izvo
+ r: https://www.vk-medvescak.hr/
+URL:https://www.vk-medvescak.hr/
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:vk-medvescak-svetice-20261016@calendar.local
+DTSTAMP:20261012T111910Z
+DTSTART;TZID=Europe/Zagreb:20261016T180000
+DTEND;TZID=Europe/Zagreb:20261016T190000
+SUMMARY:VK Medveščak – Svetice (škola)
+LOCATION:Bazeni Svetice\, Zagreb
+DESCRIPTION:Automatski preuzeto sa službenog rasporeda VK Medveščak. Izvo
+ r: https://www.vk-medvescak.hr/
+URL:https://www.vk-medvescak.hr/
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:vk-medvescak-svetice-20261017@calendar.local
+DTSTAMP:20261012T111910Z
+DTSTART;TZID=Europe/Zagreb:20261017T100000
+DTEND;TZID=Europe/Zagreb:20261017T110000
+SUMMARY:VK Medveščak – Svetice (škola)
+LOCATION:Bazeni Svetice\, Zagreb
 DESCRIPTION:Automatski preuzeto sa službenog rasporeda VK Medveščak. Izvo
  r: https://www.vk-medvescak.hr/
 URL:https://www.vk-medvescak.hr/
