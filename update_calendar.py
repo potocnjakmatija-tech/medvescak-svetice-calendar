@@ -61,6 +61,7 @@ class Session:
     start: str
     end: str
     raw: str
+    location: str = "Svetice"
 
 
 def ascii_norm(s: str) -> str:
@@ -374,20 +375,43 @@ def extract_sessions(img: Image.Image) -> List[Session]:
         else:
             raise RuntimeError("Red škole plivanja i vaterpola nije prepoznat.")
 
+    # zadana lokacija iz naslova iznad tablice (npr. "... 12 – 18. 10. 2026. Svetice"
+    # ili "... Šalata/Svetice"); ćelije često nose samo satnicu kad je cijeli tjedan
+    # na jednom bazenu
+    band = int(work.height * 0.07)
+    title_raw = ocr_cell(work, (0, max(0, ys[0] - band), work.width, ys[0])) if ys[0] > 40 else ""
+    title_n = ascii_norm(title_raw)
+    if "SVET" in title_n and "SALATA" not in title_n:
+        default_loc = "Svetice"
+    elif "SALATA" in title_n and "SVET" not in title_n:
+        default_loc = "Šalata"
+    else:
+        default_loc = None
+    print(f"Naslov (OCR): {title_raw!r} -> zadana lokacija: {default_loc}")
+
     y1, y2 = school_row
     sessions: List[Session] = []
     for offset, day in enumerate(DAYS):
         x1, x2 = cols[offset + 1]
         raw = ocr_cell(work, (x1, y1, x2, y2))
         n = ascii_norm(raw)
-        # korisnik želi samo Svetice; Šalata se namjerno ignorira
-        if "SVET" not in n:
+        print(f"  {day}: {raw!r}")
+
+        if "SVET" in n:
+            loc = "Svetice"
+        elif "SALATA" in n or "JELKOVEC" in n or "KORCUL" in n:
+            continue  # izričito drugi bazen – korisnik želi samo Svetice
+        else:
+            loc = default_loc or "Svetice/Šalata – provjeriti na vk-medvescak.hr"
+
+        if loc == "Šalata":
             continue
+
         times = parse_times(raw)
         if not times:
-            raise RuntimeError(f"Svetice su prepoznate za {day}, ali satnica nije: {raw!r}")
+            continue  # "X" ili nečitljivo – nema treninga taj dan
         start, end = times
-        sessions.append(Session(offset, start, end, raw))
+        sessions.append(Session(offset, start, end, raw, loc))
 
     if not sessions:
         raise RuntimeError(
@@ -446,8 +470,8 @@ def make_ics(week_start: datetime, sessions: List[Session], source_url: str) -> 
             f"DTSTAMP:{now}",
             f"DTSTART;TZID={TZID}:{ymd}T{start}",
             f"DTEND;TZID={TZID}:{ymd}T{end}",
-            f"SUMMARY:{ics_escape(EVENT_TITLE)}",
-            "LOCATION:Bazeni Svetice, Zagreb",
+            f"SUMMARY:{ics_escape('VK Medveščak – ' + s.location + ' (škola)')}",
+            f"LOCATION:{ics_escape('Bazeni ' + s.location + ', Zagreb')}",
             f"DESCRIPTION:{ics_escape(desc)}",
             f"URL:{source_url}",
             "STATUS:CONFIRMED",
@@ -472,7 +496,7 @@ def main() -> int:
     print(f"Slika: {image_url}")
     for s in sessions:
         d = week_start + timedelta(days=s.day_offset)
-        print(f"{d.date()} {s.start}-{s.end} Svetice")
+        print(f"{d.date()} {s.start}-{s.end} {s.location}")
     print(f"Zapisano: {OUT}")
     return 0
 
