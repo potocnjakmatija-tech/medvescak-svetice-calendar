@@ -8,10 +8,10 @@ X-WR-TIMEZONE:Europe/Zagreb
 REFRESH-INTERVAL;VALUE=DURATION:PT6H
 X-PUBLISHED-TTL:PT6H
 BEGIN:VEVENT
-UID:vk-medvescak-svetice-20261102@calendar.local
-DTSTAMP:20261109T123816Z
-DTSTART;TZID=Europe/Zagreb:20261102T180000
-DTEND;TZID=Europe/Zagreb:20261102T190000
+UID:vk-medvescak-svetice-20261109@calendar.local
+DTSTAMP:20261110T121839Z
+DTSTART;TZID=Europe/Zagreb:20261109T180000
+DTEND;TZID=Europe/Zagreb:20261109T190000
 SUMMARY:VK Medveščak – Svetice (škola)
 LOCATION:Bazeni Svetice\, Zagreb
 DESCRIPTION:Automatski preuzeto sa službenog rasporeda VK Medveščak. Izvo
@@ -21,10 +21,10 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:vk-medvescak-svetice-20261104@calendar.local
-DTSTAMP:20261109T123816Z
-DTSTART;TZID=Europe/Zagreb:20261104T180000
-DTEND;TZID=Europe/Zagreb:20261104T190000
+UID:vk-medvescak-svetice-20261111@calendar.local
+DTSTAMP:20261110T121839Z
+DTSTART;TZID=Europe/Zagreb:20261111T180000
+DTEND;TZID=Europe/Zagreb:20261111T190000
 SUMMARY:VK Medveščak – Svetice (škola)
 LOCATION:Bazeni Svetice\, Zagreb
 DESCRIPTION:Automatski preuzeto sa službenog rasporeda VK Medveščak. Izvo
@@ -34,10 +34,10 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:vk-medvescak-svetice-20261106@calendar.local
-DTSTAMP:20261109T123816Z
-DTSTART;TZID=Europe/Zagreb:20261106T180000
-DTEND;TZID=Europe/Zagreb:20261106T190000
+UID:vk-medvescak-svetice-20261113@calendar.local
+DTSTAMP:20261110T121839Z
+DTSTART;TZID=Europe/Zagreb:20261113T180000
+DTEND;TZID=Europe/Zagreb:20261113T190000
 SUMMARY:VK Medveščak – Svetice (škola)
 LOCATION:Bazeni Svetice\, Zagreb
 DESCRIPTION:Automatski preuzeto sa službenog rasporeda VK Medveščak. Izvo
@@ -47,10 +47,10 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:vk-medvescak-svetice-20261107@calendar.local
-DTSTAMP:20261109T123816Z
-DTSTART;TZID=Europe/Zagreb:20261107T100000
-DTEND;TZID=Europe/Zagreb:20261107T110000
+UID:vk-medvescak-svetice-20261114@calendar.local
+DTSTAMP:20261110T121839Z
+DTSTART;TZID=Europe/Zagreb:20261114T100000
+DTEND;TZID=Europe/Zagreb:20261114T110000
 SUMMARY:VK Medveščak – Svetice (škola)
 LOCATION:Bazeni Svetice\, Zagreb
 DESCRIPTION:Automatski preuzeto sa službenog rasporeda VK Medveščak. Izvo
